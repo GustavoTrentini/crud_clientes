@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Modules\ApiClientes;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::get('/clientes', [ApiClientes::class, 'list']);
+Route::post('/clientes', [ApiClientes::class, 'store']);
+Route::get('/clientes/show/{id}', [ApiClientes::class, 'show']);
+Route::put('/clientes/update/{id}', [ApiClientes::class, 'update']);
+Route::delete('/clientes/delete/{id}', [ApiClientes::class, 'delete']);

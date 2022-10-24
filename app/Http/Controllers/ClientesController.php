@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use App\Models\Clientes;
 
@@ -11,7 +12,7 @@ class ClientesController extends Controller
     protected $roles = [
         "codigo" => "required|max:15",
         "nome" => "required|max:150",
-        "cpf_cnpj" => "required|max:20",
+        "cpf_cnpj" => "required|max:20|unique:clientes,cpf_cnpj",
         "fone" => "required|max:15",
         "limiteCredito" => "",
         "validade" => "required|after:yesterday",
@@ -39,14 +40,14 @@ class ClientesController extends Controller
     // Método que grava o cliente no banco de dados
     public function store(Request $request, Clientes $clientes){
 
-        $request->validate($this->roles);
-
         $data = $request->all();
 
         $data['limiteCredito'] = currencyToFloat($data['limiteCredito']);
         $data['cpf_cnpj'] = sanitizeSringData($data['cpf_cnpj']);
         $data['fone'] = sanitizeSringData($data['fone']);
         $data['cep'] = sanitizeSringData($data['cep']);
+
+        $request->validate($this->roles, $data);
 
         $cliente = $clientes->create($data);
 
@@ -81,14 +82,16 @@ class ClientesController extends Controller
     // Método que grava as alterações do cliente no banco de dados
     public function update(Request $request, Clientes $clientes, $id){
 
-        $request->validate($this->roles);
+        $rules = (object)$this->roles;
+        $rules->cpf_cnpj = [Rule::unique('clientes', 'cpf_cnpj')->ignore($id),"required","max:20"];
 
         $data = $request->all();
-
         $data['limiteCredito'] = currencyToFloat($data['limiteCredito']);
         $data['cpf_cnpj'] = sanitizeSringData($data['cpf_cnpj']);
         $data['fone'] = sanitizeSringData($data['fone']);
         $data['cep'] = sanitizeSringData($data['cep']);
+
+        $request->validate((array)$rules, $data);
 
         $cliente = $clientes->find($id);
         $cliente->update($data);
